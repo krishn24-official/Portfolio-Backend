@@ -16,6 +16,7 @@ from slowapi.util import get_remote_address
 
 from rag import answer_question
 
+# Portfolio Chatbot Backend - updated TOP_K=8
 logger = logging.getLogger(__name__)
 
 load_dotenv()

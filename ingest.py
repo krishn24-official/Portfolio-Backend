@@ -37,6 +37,14 @@ def build_chunks(data: dict) -> list[dict]:
         ),
     })
 
+    if "availability" in data:
+        chunks.append({
+            "id": "availability",
+            "section": "availability",
+            "title": "Availability",
+            "text": f"{data['name']} is {data['availability']}",
+        })
+
     chunks.append({
         "id": "contact",
         "section": "contact",

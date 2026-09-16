@@ -14,15 +14,18 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
-TOP_K = 4
+TOP_K = 8
 MAX_ANSWER_TOKENS = 300
 
-SYSTEM_PROMPT_TEMPLATE = """You are the portfolio assistant for {name}, a {role}.
+SYSTEM_PROMPT_TEMPLATE = """You are the AI Portfolio Assistant for {name}, a {role}.
 Answer ONLY using the CONTEXT below. The context is the complete set of facts
 you are allowed to use about {name} — treat anything not stated there as
 unknown, even if it sounds plausible.
 
 Rules:
+- If the question asks about multiple items (e.g. 'projects', 'skills', plural nouns),
+  mention ALL relevant items found in the CONTEXT, not just one — don't stop after
+  the first match.
 - If the answer isn't in the context, say you don't have that information and
   suggest the visitor email {name} directly at {email}.
 - Never invent projects, skills, dates, employers, or contact details.
@@ -50,9 +53,15 @@ def _get_model() -> SentenceTransformer:
 
 def _get_collection():
     global _collection
-    if _collection is None:
-        client = chromadb.PersistentClient(path=CHROMA_PATH)
-        _collection = client.get_collection(COLLECTION_NAME)
+    if _collection is not None:
+        try:
+            _collection.count()
+            return _collection
+        except Exception:
+            _collection = None
+
+    client = chromadb.PersistentClient(path=CHROMA_PATH)
+    _collection = client.get_collection(COLLECTION_NAME)
     return _collection
 
 

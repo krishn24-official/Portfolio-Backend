@@ -1,7 +1,8 @@
 {
   "name": "Krishna Tandel",
-  "role": "Python Backend & AI Developer",
-  "tagline": "I build scalable REST APIs, Agentic AI pipelines, and real-time systems.",
+  "role": "Python Full Stack Developer | AI Engineer",
+  "tagline": "I build scalable full-stack applications, AI-powered backends, and real-time systems using Python, FastAPI, and React.",
+  "availability": "Available immediately — actively looking for internship and full-time opportunities.",
   "location": "Bilimora, Gujarat",
   "email": "krishtandel24@gmail.com",
   "socials": {
@@ -9,7 +10,7 @@
     "linkedin": "https://www.linkedin.com/in/krisn24",
     "resume": "/resume.pdf"
   },
-  "about": "I'm a Python & FastAPI backend developer with 6 months of industry experience building production-grade REST APIs, JWT authentication systems, and Agentic AI pipelines using Gemini function-calling. I have designed and deployed scalable backend services with PostgreSQL, MongoDB, and WebSocket integrations, and I am actively seeking a Python Backend or AI Engineer role to deliver reliable, intelligent systems.",
+  "about": "Python Full Stack Developer with 6 months of internship experience building AI-powered applications, REST APIs, authentication systems, and real-time backend services — plus the front-end pages and API integrations that connect them. Experienced with FastAPI, PostgreSQL, MongoDB, WebSockets, React, and modern deployment platforms. Passionate about building production-ready backend systems and AI solutions.",
   "skills": [
     { "category": "Programming Languages", "items": ["C", "Python", "JavaScript"] },
     { "category": "Frontend", "items": ["HTML5", "CSS", "React"] },
@@ -37,17 +38,6 @@
       "decisions": "Integrated WebSockets for real-time notifications and live data updates, backed by scalable PostgreSQL databases.",
       "learned": "Learned to design and manage PostgreSQL databases and implement secure JWT-based authentication in a production setting.",
       "stack": ["Python", "FastAPI", "PostgreSQL", "WebSockets"],
-      "liveUrl": "",
-      "repoUrl": ""
-    },
-    {
-      "id": "proj-03",
-      "title": "AI Agent Prototype",
-      "summary": "A capstone deliverable featuring a working AI agent built using NLP pipelines and prompt engineering during an IBM SkillsBuild internship.",
-      "problem": "Applying prompt engineering techniques and AI agent workflows to practical reasoning tasks.",
-      "decisions": "Utilized industry tools to develop NLP pipelines and LLM-based reasoning for the prototype.",
-      "learned": "Gained practical exposure to LLM-based reasoning and ML model evaluation.",
-      "stack": ["Python", "NLP", "Prompt Engineering", "Machine Learning"],
       "liveUrl": "",
       "repoUrl": ""
     }
