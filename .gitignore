@@ -1,0 +1,26 @@
+# Environment variables & secrets (NEVER commit)
+.env
+
+# Python cache & build files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Vector database (generated via python ingest.py)
+chroma_db/
+
+# Logs
+*.log
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
