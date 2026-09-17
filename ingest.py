@@ -6,7 +6,7 @@ Run this once (and again any time data/portfolio_content.json changes) to
 
 It reads data/portfolio_content.json, splits it into small topical chunks
 (one per project, one for the bio, one per skill group, one for contact),
-embeds each chunk locally with sentence-transformers (no API key needed),
+embeds each chunk with Chroma's built-in ONNX default embedding function,
 and writes them into a persistent Chroma collection on disk at ./chroma_db.
 """
 
@@ -14,12 +14,11 @@ import json
 from pathlib import Path
 
 import chromadb
-from sentence_transformers import SentenceTransformer
+from chromadb.utils import embedding_functions
 
 DATA_PATH = Path(__file__).parent / "data" / "portfolio_content.json"
 CHROMA_PATH = str(Path(__file__).parent / "chroma_db")
 COLLECTION_NAME = "portfolio"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 
 def build_chunks(data: dict) -> list[dict]:
@@ -95,22 +94,20 @@ def main():
     data = json.loads(DATA_PATH.read_text())
     chunks = build_chunks(data)
 
-    print(f"Built {len(chunks)} chunks. Loading embedding model...")
-    model = SentenceTransformer(EMBEDDING_MODEL)
-    embeddings = model.encode([c["text"] for c in chunks]).tolist()
-
+    print(f"Built {len(chunks)} chunks. Indexing into ChromaDB...")
     client = chromadb.PersistentClient(path=CHROMA_PATH)
+    ef = embedding_functions.DefaultEmbeddingFunction()
+
     # Start clean each time so re-running ingest.py never leaves stale chunks
     # from a previous version of the data.
     try:
         client.delete_collection(COLLECTION_NAME)
     except Exception:
         pass
-    collection = client.create_collection(COLLECTION_NAME)
+    collection = client.create_collection(COLLECTION_NAME, embedding_function=ef)
 
     collection.add(
         ids=[c["id"] for c in chunks],
-        embeddings=embeddings,
         documents=[c["text"] for c in chunks],
         metadatas=[{"section": c["section"], "title": c["title"]} for c in chunks],
     )

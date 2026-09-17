@@ -5,12 +5,11 @@ import os
 from pathlib import Path
 
 import chromadb
+from chromadb.utils import embedding_functions
 from groq import Groq
-from sentence_transformers import SentenceTransformer
 
 CHROMA_PATH = str(Path(__file__).parent / "chroma_db")
 COLLECTION_NAME = "portfolio"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
@@ -39,16 +38,8 @@ CONTEXT:
 {context}
 """
 
-_model = None
 _client = None
 _collection = None
-
-
-def _get_model() -> SentenceTransformer:
-    global _model
-    if _model is None:
-        _model = SentenceTransformer(EMBEDDING_MODEL)
-    return _model
 
 
 def _get_collection():
@@ -61,7 +52,8 @@ def _get_collection():
             _collection = None
 
     client = chromadb.PersistentClient(path=CHROMA_PATH)
-    _collection = client.get_collection(COLLECTION_NAME)
+    ef = embedding_functions.DefaultEmbeddingFunction()
+    _collection = client.get_collection(COLLECTION_NAME, embedding_function=ef)
     return _collection
 
 
@@ -79,10 +71,9 @@ def _get_groq_client() -> Groq:
 
 
 def retrieve(question: str, top_k: int = TOP_K) -> list[dict]:
-    """Embed the question and return the top_k most relevant chunks."""
+    """Retrieve the top_k most relevant chunks using Chroma's embedding function."""
     collection = _get_collection()
-    query_embedding = _get_model().encode([question]).tolist()
-    results = collection.query(query_embeddings=query_embedding, n_results=top_k)
+    results = collection.query(query_texts=[question], n_results=top_k)
 
     chunks = []
     for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
