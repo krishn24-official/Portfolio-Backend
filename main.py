@@ -26,6 +26,15 @@ PROFILE = json.loads(DATA_PATH.read_text())
 
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")
 
+configured_origins = [
+    origin.strip().rstrip("/")
+    for origin in FRONTEND_ORIGIN.split(",")
+    if origin.strip()
+]
+for default_origin in ["http://localhost:5173", "http://127.0.0.1:5173"]:
+    if default_origin not in configured_origins:
+        configured_origins.append(default_origin)
+
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="Portfolio Chatbot API")
@@ -34,11 +43,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        FRONTEND_ORIGIN,
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=configured_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
