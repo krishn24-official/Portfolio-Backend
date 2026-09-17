@@ -2,14 +2,13 @@ import json
 import logging
 import os
 import re
-import smtplib
-from email.message import EmailMessage
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
+import resend
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -20,6 +19,8 @@ from rag import answer_question
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+
+resend.api_key = os.environ["RESEND_API_KEY"]
 
 DATA_PATH = Path(__file__).parent / "data" / "portfolio_content.json"
 PROFILE = json.loads(DATA_PATH.read_text())
@@ -90,39 +91,19 @@ def chat(request: Request, body: ChatRequest):
 @app.post("/contact", response_model=ContactResponse)
 @limiter.limit("3/hour")
 def contact(request: Request, body: ContactRequest):
-    owner_email = os.environ.get("OWNER_EMAIL")
-    gmail_address = os.environ.get("GMAIL_ADDRESS")
-    gmail_app_password = os.environ.get("GMAIL_APP_PASSWORD")
-
-    if not all([owner_email, gmail_address, gmail_app_password]):
-        logger.error("Missing Gmail SMTP configuration in environment variables.")
-        raise HTTPException(
-            status_code=502,
-            detail="Failed to send message. Please try again later.",
-        )
-
-    # Sanitize name and email to prevent email header injection
-    clean_name = re.sub(r"[\r\n]+", " ", body.name).strip()
-    clean_email = re.sub(r"[\r\n]+", "", str(body.email)).strip()
-
-    msg = EmailMessage()
-    msg["Subject"] = f"Portfolio contact: message from {clean_name}"
-    msg["From"] = gmail_address
-    msg["To"] = owner_email
-    msg["Reply-To"] = clean_email
-    msg.set_content(
-        f"You received a new message from your portfolio contact form:\n\n"
-        f"Name: {clean_name}\n"
-        f"Email: {clean_email}\n\n"
-        f"Message:\n{body.message}\n"
-    )
+    # Sanitize name to prevent email header injection
+    sanitized_name = re.sub(r"[\r\n]+", " ", body.name).strip()
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(gmail_address, gmail_app_password)
-            server.send_message(msg)
+        resend.Emails.send({
+            "from": "Portfolio Contact <onboarding@resend.dev>",
+            "to": [os.environ["OWNER_EMAIL"]],
+            "reply_to": body.email,
+            "subject": f"Portfolio contact: message from {sanitized_name}",
+            "text": f"From: {sanitized_name} <{body.email}>\n\n{body.message}",
+        })
     except Exception as e:
-        logger.error(f"SMTP delivery failed: {e}")
+        logger.error(f"Resend delivery failed: {e}")
         raise HTTPException(
             status_code=502,
             detail="Failed to send message. Please try again later.",
